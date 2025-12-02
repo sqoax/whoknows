@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>•</title>
+    <style>
+        /* --- CORE AESTHETICS --- */
+        :root {
+            --bg-color: #080808; /* Not pure black. Deep charcoal. */
+            --text-primary: #b0b0b0; /* Muted silver */
+            --text-faint: #333333; /* Barely visible */
+            --cursor-color: #555555;
+            --spotlight-size: 600px;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            font-family: 'Courier New', Courier, monospace; /* System mono for raw feel */
+            overflow: hidden; /* No scrolling allowed */
+            cursor: none; /* Hide default cursor */
+        }
+
+        /* --- THE NOISE TEXTURE (Film Grain) --- */
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.04;
+            z-index: 10;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* --- THE PHANTOM LIGHT (Mouse Follower) --- */
+        .spotlight {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(
+                circle at var(--x, 50%) var(--y, 50%), 
+                rgba(255, 255, 255, 0.03) 0%, 
+                rgba(0, 0, 0, 0) 40%
+            );
+            pointer-events: none;
+            z-index: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        /* --- MICRO TYPOGRAPHY --- */
+        .terminal-container {
+            position: absolute;
+            top: 60px;
+            left: 60px;
+            z-index: 20;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            color: var(--text-primary);
+            text-transform: uppercase;
+        }
+
+        .cursor-block {
+            display: inline-block;
+            width: 7px;
+            height: 13px;
+            background-color: var(--cursor-color);
+            margin-left: 5px;
+            animation: breathe 2.5s infinite;
+            vertical-align: middle;
+        }
+
+        /* --- FAINT CORNER DETAILS --- */
+        .meta-data {
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            text-align: right;
+            font-size: 9px;
+            color: var(--text-faint);
+            z-index: 20;
+            line-height: 1.6;
+            opacity: 0.5;
+        }
+
+        /* --- THE CUSTOM CURSOR --- */
+        .custom-cursor {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 100;
+            transform: translate(-50%, -50%);
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes breathe {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+
+        /* Success State Animation */
+        .flash {
+            animation: flash-screen 1s ease-out forwards;
+        }
+
+        @keyframes flash-screen {
+            0% { background-color: #fff; }
+            100% { background-color: var(--bg-color); }
+        }
+
+        .verified {
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+            transition: color 1s ease;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="noise-overlay"></div>
+    
+    <div class="spotlight" id="spotlight"></div>
+    
+    <div class="custom-cursor" id="cursor"></div>
+
+    <div class="terminal-container">
+        <span id="typewriter"></span><span class="cursor-block"></span>
+    </div>
+
+    <div class="meta-data">
+        <div>SESSION: NULL_PTR</div>
+        <div id="node-id">NODE: WAITING</div>
+    </div>
+
+    <script>
+        // --- 1. MOUSE PHYSICS (The Phantom Light) ---
+        const root = document.documentElement;
+        const cursor = document.getElementById('cursor');
+        
+        document.addEventListener('mousemove', (e) => {
+            // Update CSS variables for the gradient spotlight
+            root.style.setProperty('--x', e.clientX + 'px');
+            root.style.setProperty('--y', e.clientY + 'px');
+
+            // Update custom cursor position (no lag)
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+
+        // --- 2. THE TYPEWRITER (Variable Speed) ---
+        const text = "Access is a discipline, not a right.";
+        const typeContainer = document.getElementById('typewriter');
+        let index = 0;
+
+        function typeWriter() {
+            if (index < text.length) {
+                typeContainer.innerHTML += text.charAt(index);
+                index++;
+                // Randomize typing speed to feel human (between 30ms and 150ms)
+                let randomSpeed = Math.floor(Math.random() * (120)) + 30; 
+                setTimeout(typeWriter, randomSpeed);
+            }
+        }
+
+        // Start typing after a delay
+        setTimeout(typeWriter, 1500);
+
+        // --- 3. THE HIDDEN LOCK (Input Logic) ---
+        let keyBuffer = "";
+        const secretCode = "legacy"; // THE PASSWORD
+        const nodeId = document.getElementById('node-id');
+
+        document.addEventListener('keydown', (e) => {
+            // Visual feedback: The spotlight flickers slightly when you type
+            document.getElementById('spotlight').style.opacity = 0.8;
+            setTimeout(() => { document.getElementById('spotlight').style.opacity = 1; }, 50);
+
+            // Cursor reaction
+            cursor.style.backgroundColor = "rgba(255,255,255,0.8)";
+            setTimeout(() => { cursor.style.backgroundColor = "rgba(255,255,255,0.3)"; }, 100);
+
+            // Record keys
+            if (e.key.length === 1 && e.key.match(/[a-z]/i)) {
+                keyBuffer += e.key.toLowerCase();
+                
+                // Keep buffer manageable
+                if (keyBuffer.length > 20) {
+                    keyBuffer = keyBuffer.slice(-20);
+                }
+
+                // CHECK FOR SUCCESS
+                if (keyBuffer.endsWith(secretCode)) {
+                    grantAccess();
+                }
+            }
+        });
+
+        function grantAccess() {
+            // 1. Flash the screen
+            document.body.classList.add('flash');
+            
+            // 2. Change the text state
+            typeContainer.classList.add('verified');
+            typeContainer.innerHTML = "IDENTITY CONFIRMED.";
+            
+            // 3. Update metadata
+            nodeId.innerHTML = "NODE: AUTHENTICATED";
+            nodeId.style.color = "#fff";
+            
+            // 4. Reveal the next layer (Here we just log it, but this would contain the redirect)
+            console.log("Welcome to the inner circle.");
+            
+            // Optional: Redirect after delay
+            // setTimeout(() => { window.location.href = '/inner-sanctum'; }, 2000);
+        }
+
+        // Generate a fake specific random ID on load
+        const randomID = "884-" + Math.floor(Math.random() * 90 + 10) + "-X";
+        document.querySelector('.meta-data div:first-child').innerText = "SESSION: " + randomID;
+
+    </script>
+</body>
+</html>
