@@ -67,6 +67,15 @@
             text-transform: uppercase;
         }
 
+        <div class="ghost-layer">
+    <span>THE INTERNET WAS BUILT FOR NOISE.</span><br>
+    <span>WE BUILT THE SILENCE.</span><br><br>
+    <span>NO FEEDS. NO FOLLOWERS.</span><br>
+    <span>NO PERFORMANCE.</span><br><br>
+    <span>ONLY THE RECORD.</span><br>
+    <span>VERIFICATION IS THE ULTIMATE LUXURY.</span>
+</div>
+
         .cursor-block {
             display: inline-block;
             width: 7px;
@@ -124,6 +133,48 @@
             text-shadow: 0 0 10px rgba(255,255,255,0.5);
             transition: color 1s ease;
         }
+
+        /* --- THE GHOST MANIFESTO --- */
+.ghost-layer {
+    position: absolute;
+    top: 50%;
+    right: 15%; /* Positioned off-center for asymmetry */
+    transform: translateY(-50%);
+    width: 300px;
+    font-family: 'Helvetica Neue', Arial, sans-serif; /* Cleaner sans-serif for contrast */
+    font-size: 10px;
+    line-height: 2.2; /* Loose leading for luxury feel */
+    color: transparent; /* Text is invisible by default */
+    z-index: 30;
+    pointer-events: auto; /* Allows hover detection */
+}
+
+/* The "Redaction" Bars */
+.ghost-layer span {
+    background-color: #111; /* Dark block covering the text */
+    color: transparent;
+    padding: 2px 6px;
+    transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1); /* Slow, smooth reveal */
+    cursor: crosshair; /* Changes cursor to signal interaction */
+}
+
+/* The Reveal Effect */
+.ghost-layer:hover span {
+    background-color: transparent; /* Remove the block */
+    color: #888; /* Reveal the silver text */
+    text-shadow: 0 0 5px rgba(255,255,255,0.1);
+}
+
+/* Add a faint guide so they know something is there */
+.ghost-layer::before {
+    content: '+';
+    position: absolute;
+    top: -20px;
+    left: 0;
+    color: #333;
+    font-size: 14px;
+    opacity: 0.5;
+}
     </style>
 </head>
 <body>
